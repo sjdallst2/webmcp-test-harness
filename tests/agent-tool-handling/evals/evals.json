@@ -1,0 +1,293 @@
+[
+  {
+    "name": "[WW-01-catalog] Immediate catalog and widget details",
+    "messages": [
+      {
+        "role": "user",
+        "type": "message",
+        "content": "Use browse_widgets to list the widget catalog, then get_widget_details for gear-widget. Do not modify the store."
+      }
+    ],
+    "expectedCall": [
+      {
+        "functionName": "browse_widgets",
+        "arguments": {},
+        "result": {
+          "ok": true,
+          "currency": "USD",
+          "products": [
+            { "id": "robot-widget", "priceCents": 1200, "available": 10 },
+            { "id": "gear-widget", "priceCents": 350, "available": 20 },
+            { "id": "screw-widget", "priceCents": 25, "available": 100 },
+            { "id": "sold-out-widget", "priceCents": 500, "available": 0 }
+          ]
+        }
+      },
+      {
+        "functionName": "get_widget_details",
+        "arguments": { "productId": "gear-widget" },
+        "result": { "ok": true, "product": { "id": "gear-widget", "priceCents": 350 } }
+      }
+    ]
+  },
+  {
+    "name": "[WW-01-shipping] Finite delayed shipping fulfillment",
+    "messages": [
+      {
+        "role": "user",
+        "type": "message",
+        "content": "Call quote_widget_shipping once with delayMs 25. Tell me the shipping options and current empty-cart total. Do not change the cart."
+      }
+    ],
+    "expectedCall": [
+      {
+        "functionName": "quote_widget_shipping",
+        "arguments": { "delayMs": 25 },
+        "result": {
+          "ok": true,
+          "options": { "standard": 500, "express": 1000 },
+          "cart": { "lines": [], "shippingCents": 0, "totalCents": 0 }
+        }
+      }
+    ]
+  },
+  {
+    "name": "[WW-02-shopping] Five distinct successful tools and 3920-cent total",
+    "messages": [
+      {
+        "role": "user",
+        "type": "message",
+        "content": "In this test store, browse the widgets, add two Robot Widgets and four Gear Widgets, show the cart, apply WIDGET10, get standard shipping with delayMs 25, and show me the final total. Do not place an order."
+      }
+    ],
+    "expectedCall": [
+      { "functionName": "browse_widgets", "arguments": {}, "result": { "ok": true } },
+      {
+        "unordered": [
+          {
+            "functionName": "add_widgets_to_cart",
+            "arguments": { "productId": "robot-widget", "quantity": 2 },
+            "result": { "ok": true }
+          },
+          {
+            "functionName": "add_widgets_to_cart",
+            "arguments": { "productId": "gear-widget", "quantity": 4 },
+            "result": { "ok": true }
+          }
+        ]
+      },
+      {
+        "functionName": "view_widget_cart",
+        "arguments": {},
+        "result": { "ok": true, "subtotalCents": 3800, "totalCents": 4300 }
+      },
+      {
+        "functionName": "apply_widget_coupon",
+        "arguments": { "code": "WIDGET10" },
+        "result": { "ok": true, "discountCents": 380, "totalCents": 3920 }
+      },
+      {
+        "functionName": "view_widget_cart",
+        "arguments": {},
+        "result": { "ok": true, "totalCents": 3920 },
+        "optional": true
+      },
+      {
+        "functionName": "quote_widget_shipping",
+        "arguments": { "delayMs": 25 },
+        "result": { "ok": true, "cart": { "shipping": "standard", "totalCents": 3920 } }
+      },
+      {
+        "functionName": "view_widget_cart",
+        "arguments": {},
+        "result": { "ok": true, "totalCents": 3920 },
+        "optional": true
+      }
+    ]
+  },
+  {
+    "name": "[WW-09-engraving] Same-turn registration and engraving",
+    "messages": [
+      {
+        "role": "user",
+        "type": "message",
+        "content": "Add one robot-widget to the cart, enable widget engraving, then engrave that Robot Widget with the text Robo #1. Do these three operations in that order. Do not buy anything."
+      }
+    ],
+    "expectedCall": [
+      {
+        "functionName": "add_widgets_to_cart",
+        "arguments": { "productId": "robot-widget", "quantity": 1 },
+        "result": { "ok": true }
+      },
+      {
+        "functionName": "enable_widget_engraving",
+        "arguments": {},
+        "result": { "ok": true, "alreadyEnabled": false, "name": "engrave_widget" }
+      },
+      {
+        "functionName": "engrave_widget",
+        "arguments": { "productId": "robot-widget", "engraving": { "text": "Robo #1" } },
+        "result": {
+          "ok": true,
+          "lines": [{ "productId": "robot-widget", "quantity": 1, "engraving": { "text": "Robo #1" } }]
+        }
+      }
+    ]
+  },
+  {
+    "name": "[WW-10-disable] Registration removal and repeated disable",
+    "messages": [
+      {
+        "role": "user",
+        "type": "message",
+        "content": "Enable widget engraving, disable it, and disable it once more. Use only those three calls in order and explain the repeated-disable result. Do not add or engrave widgets."
+      }
+    ],
+    "expectedCall": [
+      {
+        "functionName": "enable_widget_engraving",
+        "arguments": {},
+        "result": { "ok": true, "alreadyEnabled": false }
+      },
+      {
+        "functionName": "disable_widget_engraving",
+        "arguments": {},
+        "result": { "ok": true, "alreadyDisabled": false }
+      },
+      {
+        "functionName": "disable_widget_engraving",
+        "arguments": {},
+        "result": { "ok": true, "alreadyDisabled": true }
+      }
+    ]
+  },
+  {
+    "name": "[WW-10-flash] Self-unregistration still returns successfully",
+    "messages": [
+      {
+        "role": "user",
+        "type": "message",
+        "content": "Call close_widget_flash_sale once. Report its result without retrying or changing the cart."
+      }
+    ],
+    "expectedCall": [
+      {
+        "functionName": "close_widget_flash_sale",
+        "arguments": {},
+        "result": { "ok": true, "message": "Flash sale closed. This in-flight callback still finished." }
+      }
+    ]
+  },
+  {
+    "name": "[WW-13-checkout] Authorized simulated checkout and identical retry",
+    "messages": [
+      {
+        "role": "user",
+        "type": "message",
+        "content": "Add two robot-widget and four gear-widget, apply WIDGET10, then read the cart revision. I explicitly authorize exactly one simulated purchase of that cart using key json-checkout-01. Place it, retry that identical checkout once using the same key and original revision, then inspect the test state to verify there is only one order. No real payment."
+      }
+    ],
+    "expectedCall": [
+      {
+        "unordered": [
+          {
+            "functionName": "add_widgets_to_cart",
+            "arguments": { "productId": "robot-widget", "quantity": 2 },
+            "result": { "ok": true }
+          },
+          {
+            "functionName": "add_widgets_to_cart",
+            "arguments": { "productId": "gear-widget", "quantity": 4 },
+            "result": { "ok": true }
+          }
+        ]
+      },
+      {
+        "functionName": "apply_widget_coupon",
+        "arguments": { "code": "WIDGET10" },
+        "result": { "ok": true, "totalCents": 3920 }
+      },
+      {
+        "functionName": "view_widget_cart",
+        "arguments": {},
+        "result": { "ok": true, "revision": 3, "totalCents": 3920 }
+      },
+      {
+        "functionName": "place_widget_order",
+        "arguments": { "confirmPurchase": true, "idempotencyKey": "json-checkout-01", "expectedRevision": 3 },
+        "result": { "ok": true, "repeated": false, "order": { "id": { "$type": "string" }, "totalCents": 3920, "simulated": true } }
+      },
+      {
+        "functionName": "place_widget_order",
+        "arguments": { "confirmPurchase": true, "idempotencyKey": "json-checkout-01", "expectedRevision": 3 },
+        "result": { "ok": true, "repeated": true, "order": { "id": { "$type": "string" }, "totalCents": 3920, "simulated": true } }
+      },
+      {
+        "functionName": "inspect_widget_test_state",
+        "arguments": {},
+        "result": {
+          "ok": true,
+          "state": {
+            "lines": [],
+            "stock": { "robot-widget": 8, "gear-widget": 16 },
+            "orders": [{ "totalCents": 3920, "status": "simulated-confirmed", "simulated": true }]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "[WW-20-boundary] Maximum quantity, coupon and removal",
+    "messages": [
+      {
+        "role": "user",
+        "type": "message",
+        "content": "Add 100 screw-widget, apply WIDGET10, set the Screw Widget quantity to zero to remove it, then select express shipping. Use those four calls in order. Do not purchase."
+      }
+    ],
+    "expectedCall": [
+      {
+        "functionName": "add_widgets_to_cart",
+        "arguments": { "productId": "screw-widget", "quantity": 100 },
+        "result": { "ok": true, "subtotalCents": 2500 }
+      },
+      {
+        "functionName": "apply_widget_coupon",
+        "arguments": { "code": "WIDGET10" },
+        "result": { "ok": true, "discountCents": 250, "totalCents": 2750 }
+      },
+      {
+        "functionName": "update_widget_quantity",
+        "arguments": { "productId": "screw-widget", "quantity": 0 },
+        "result": { "ok": true, "lines": [], "totalCents": 0 }
+      },
+      {
+        "functionName": "select_widget_shipping",
+        "arguments": { "method": "express" },
+        "result": { "ok": true, "lines": [], "shipping": "express", "shippingCents": 0, "totalCents": 0 }
+      }
+    ]
+  },
+  {
+    "name": "[WW-21-values] Structured and meaningful falsy results",
+    "messages": [
+      {
+        "role": "user",
+        "type": "message",
+        "content": "Call get_widget_result_sample for these shapes in order: structured, number, false, null, empty. Explain each result. Do not treat false, null or an empty string as a tool failure."
+      }
+    ],
+    "expectedCall": [
+      {
+        "functionName": "get_widget_result_sample",
+        "arguments": { "shape": "structured" },
+        "result": { "ok": true, "widgets": [{ "id": "gear-widget", "priceCents": 350 }] }
+      },
+      { "functionName": "get_widget_result_sample", "arguments": { "shape": "number" }, "result": 350 },
+      { "functionName": "get_widget_result_sample", "arguments": { "shape": "false" }, "result": false },
+      { "functionName": "get_widget_result_sample", "arguments": { "shape": "null" }, "result": null },
+      { "functionName": "get_widget_result_sample", "arguments": { "shape": "empty" }, "result": "" }
+    ]
+  }
+]
