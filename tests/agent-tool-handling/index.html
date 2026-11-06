@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Widget Works | WebMCP test store</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script type="module" src="./app.mjs"></script>
+</head>
+<body>
+  <header><span class="logo" aria-hidden="true">🤖</span><div><h1>Widget Works</h1><p>Little parts. Big agent adventures.</p></div></header>
+  <main>
+    <p class="banner">TEST STORE - NO REAL PURCHASES. All inventory, reservations and orders are synthetic.</p>
+    <p id="capabilities" class="notice">Checking native WebMCP capabilities...</p>
+    <p id="message" role="status" aria-live="polite"></p>
+    <div class="store-layout">
+      <section aria-labelledby="catalog-heading"><h2 id="catalog-heading">Build something brilliant</h2><div id="catalog" class="catalog"></div></section>
+      <section class="cart" aria-labelledby="cart-heading">
+        <h2 id="cart-heading">🛒 Your widget cart</h2>
+        <div id="cart-lines"></div>
+        <form id="coupon-form"><label>Coupon <input name="code" maxlength="80" placeholder="WIDGET10" required></label><button>Apply coupon</button></form>
+        <label>Shipping <select id="shipping"><option value="standard">Standard - $5.00</option><option value="express">Express - $10.00</option></select></label>
+        <div id="totals"></div>
+        <label class="confirmation"><input id="confirm" type="checkbox"> I authorize this simulated purchase (no real charge).</label>
+        <button id="checkout">Place simulated order</button>
+        <p><a href="./order-status.html">📦 View simulated order status</a></p>
+      </section>
+    </div>
+    <details id="lab">
+      <summary>🧰 Agent test lab</summary>
+      <p>Native events and callback logs are not proof of an agent's timeout or conversation state. Expected diagnostic failures are intentional.</p>
+      <p id="store-state"></p>
+      <div class="controls">
+        <button id="reset">Reset store and presets</button>
+        <button id="clear-log">Clear log</button>
+        <button id="export-log">Download JSON log</button>
+        <button id="copy-log">Copy JSON log</button>
+      </div>
+      <form id="presets" class="controls">
+        <label>Success delay (ms)<input name="success" type="number" min="0" max="600000" value="1500" required></label>
+        <label>Failure delay (ms)<input name="failure" type="number" min="0" max="600000" value="2000" required></label>
+        <label>Slow delay (ms)<input name="slow" type="number" min="0" max="600000" value="30000" required></label>
+        <button>Set delays</button>
+      </form>
+      <label>External agent timeout T (ms, driver record only)
+        <input id="agent-timeout" type="number" min="1" max="299000" placeholder="Unknown - timeout scenarios BLOCKED">
+      </label>
+      <button id="record-timeout">Record T and set slow delay to 2*T + 2000</button>
+      <h3>Native capability details</h3><pre id="capability-details"></pre>
+      <h3>Tool registrations <small>(actual page registration readiness)</small></h3><ul id="tools"></ul>
+      <h3>Active callbacks</h3><ul id="active"></ul>
+      <p><a href="./diagnostics.html">Run opt-in native API diagnostics</a> · <a href="./README.md">Setup and contracts</a> · <a href="./coverage.json">Coverage manifest</a> · <a href="./evals/README.md">JSON agent evals</a></p>
+      <h3>Chronological event log <small>(latest 400 entries)</small></h3><pre id="events" tabindex="0" aria-label="Widget event log"></pre>
+    </details>
+  </main>
+  <footer>⚙️ Static files, real WebMCP, pretend widgets. Tax is intentionally $0.00.</footer>
+</body>
+</html>

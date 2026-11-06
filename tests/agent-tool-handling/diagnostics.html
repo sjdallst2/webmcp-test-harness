@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Widget Works | Native diagnostics</title><link rel="stylesheet" href="./styles.css">
+  <script type="module" src="./diagnostics-ui.mjs"></script>
+</head>
+<body>
+  <header><h1>🧪 Widget native diagnostics</h1></header>
+  <main>
+    <p class="banner">OPT-IN DIAGNOSTICS. Expected throws, rejected promises and serialization errors are intentional. No real orders.</p>
+    <p>These probes exercise the real native API, not an external agent. Their caller deadline is 3000 ms. They do not prove agent interruption, timeout messaging or next-prompt discovery.</p>
+    <p><a href="./index.html">Storefront</a> · <a href="./README.md">Setup and limitations</a></p>
+    <label>Probe group
+      <select id="group">
+        <option value="all">All local probes</option>
+        <option value="store">Store tool integration</option>
+        <option value="registration">Registration and schema boundaries</option>
+        <option value="execution">Execution and serialization</option>
+        <option value="lifetime">Abort, events and document lifetime</option>
+        <option value="frames">Frame tool identity and discovery</option>
+        <option value="permissions">Permissions and origin validation</option>
+        <option value="cross-origin">Optional second-origin fixture</option>
+      </select>
+    </label>
+    <label>Optional second local origin (same static files)
+      <input id="second-origin" type="url" placeholder="http://localhost:8766">
+    </label>
+    <div class="controls"><button id="run">Run native probes</button><button id="download">Download last results</button></div>
+    <p id="status" role="status" aria-live="polite">Not run.</p>
+    <pre id="results" tabindex="0" aria-label="Native diagnostic results"></pre>
+    <h2>Temporary fixture documents</h2><div id="frames"></div>
+  </main>
+</body>
+</html>

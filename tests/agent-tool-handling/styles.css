@@ -1,0 +1,41 @@
+/* Copyright (c) Microsoft Corporation. Licensed under the MIT License. */
+:root { color-scheme: light; font-family: system-ui, sans-serif; color: #172936; background: #f3f6fa; line-height: 1.5; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+header, main, footer { max-width: 1200px; margin: auto; padding: 1.25rem; }
+header { display: flex; gap: 1rem; align-items: center; }
+.logo { font-size: 4rem; }
+h1, h2, h3, p { margin: .5rem 0 1rem; }
+header p { color: #3c5264; margin: 0; }
+a { color: #154e99; overflow-wrap: anywhere; }
+button, input, select { font: inherit; border-radius: .4rem; padding: .5rem .7rem; border: 1px solid #6b8190; }
+button { cursor: pointer; color: white; background: #194f89; border-color: #194f89; }
+button:hover { background: #10365e; }
+button:disabled { background: #536574; cursor: not-allowed; }
+input, select { background: white; color: #172936; max-width: 100%; }
+input[type="number"] { width: 10rem; }
+input[type="checkbox"] { width: auto; }
+label { display: block; margin: .7rem 0; }
+label input:not([type="checkbox"]), label select { display: block; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible, pre:focus-visible { outline: 3px solid #ae4400; outline-offset: 3px; }
+.banner { background: #fce8b3; color: #503800; border: 1px solid #ad7b00; padding: 1rem; border-radius: .5rem; font-weight: 650; }
+.notice { background: #e2ecf9; border-left: 4px solid #194f89; padding: .75rem; }
+.error { color: #9c2020; }
+.store-layout { display: grid; grid-template-columns: 1.6fr 1fr; gap: 1.5rem; margin: 1.5rem 0; }
+.catalog { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.product, .cart, details, .panel { padding: 1.25rem; background: white; border: 1px solid #bccbda; border-radius: .75rem; }
+.product .emoji { font-size: 3rem; }
+.cart-line { border-bottom: 1px solid #bccbda; padding: .6rem 0; }
+.cart-line input { width: 5rem; display: inline-block !important; }
+.cart-line button { margin: .3rem; }
+.totals { display: flex; justify-content: space-between; gap: 1rem; }
+.total { font-weight: 750; border-top: 1px solid #6b8190; padding-top: .5rem; }
+.controls { display: flex; flex-wrap: wrap; align-items: end; gap: .75rem; margin: 1rem 0; }
+summary { cursor: pointer; font-size: 1.2rem; font-weight: 700; }
+pre { background: #122637; color: #e1edf6; padding: 1rem; border-radius: .4rem; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 28rem; overflow: auto; font-size: .85rem; }
+ul { padding-left: 1.4rem; }
+small { font-weight: 400; }
+footer { color: #3c5264; }
+iframe { width: 100%; height: 7rem; border: 1px solid #6b8190; margin: .5rem 0; }
+@media (max-width: 760px) { .store-layout { grid-template-columns: 1fr; } }
+@media (max-width: 420px) { .catalog { grid-template-columns: 1fr; } }

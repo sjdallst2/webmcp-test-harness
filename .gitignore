@@ -1,0 +1,6 @@
+__pycache__/
+*.py[cod]
+.evals/
+.env
+.env.*
+!.env.example
