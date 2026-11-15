@@ -21,6 +21,10 @@ build step for the site.
 - [Native diagnostics](tests/agent-tool-handling/diagnostics.html): opt-in browser
   probes for schemas, execution, cancellation, document lifetime, frames and
   permissions. Native probes are not proof of actual-agent behavior.
+- [Reconciliation counter](tests/agent-tool-handling/reconciliation.html): an
+  isolated, bounded synthetic action counter with an independent visible
+  witness for lost-result and duplicate-execution tests. No purchases or
+  network writes; existing storefront tools are unchanged.
 - [Dependency-free tests](tests/agent-tool-handling/contracts.test.mjs), a local
   static server, a coverage manifest and an allowlisted Pages staging script.
 

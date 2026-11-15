@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WebMCP reconciliation counter</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script type="module" src="./reconciliation.mjs"></script>
+</head>
+<body>
+  <header><h1>Reconciliation counter</h1></header>
+  <main>
+    <p class="banner">TEST ONLY - NO PURCHASES, PAYMENTS OR NETWORK WRITES.</p>
+    <p>This separate fixture changes only a counter in this document's memory.
+      Every execution increments it, even with an identical operationId. Labels are not idempotency keys.</p>
+    <p>Reloading or navigating starts a new run at zero. Always compare the run ID.
+      There is no model-facing reset tool.</p>
+    <p id="reconciliation-status" role="status" aria-live="polite">Checking native WebMCP registration...</p>
+    <p>Run ID: <output id="reconciliation-run"></output></p>
+    <p>Committed executions: <output id="reconciliation-count" aria-live="polite">0</output></p>
+    <h2>Independent execution witness</h2>
+    <pre id="reconciliation-state" tabindex="0" aria-label="Reconciliation counter state"></pre>
+    <p>The counter commits and this witness updates before the execution callback returns.
+      A driver can read it independently when a native or client result is deliberately dropped.
+      The fixture never drops replies itself and does not prove delivery, model receipt or user acknowledgment.</p>
+    <p><a href="./index.html">Widget Works</a> | <a href="./README.md#reconciliation-counter">Test procedure</a></p>
+  </main>
+</body>
+</html>

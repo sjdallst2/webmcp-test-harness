@@ -13,6 +13,7 @@ import { stagePages, siteFiles, rootFiles } from './scripts/stage-pages.mjs';
 
 const site = fileURLToPath(new URL('./', import.meta.url));
 const skill = fileURLToPath(new URL('../../.github/skills/webmcp-agent-tool-handling/', import.meta.url));
+const reconciliation = () => import('./reconciliation.mjs');
 const fresh = () => {
   const store = new WidgetStore();
   return { store, runtime: createRuntime(store) };
@@ -281,4 +282,102 @@ test('standalone Pages staging includes the root entry and only allowlisted fixt
   } finally {
     await rm(temporary, { recursive: true });
   }
+});
+
+test('reconciliation counter increments on every execution, including identical retries', async () => {
+  const { createReconciliationCounter } = await reconciliation();
+  const counter = createReconciliationCounter();
+  const before = counter.read({});
+  assert.equal(before.count, 0);
+  assert.deepEqual(before.executions, []);
+  assert.equal(counter.increment({ operationId: 'lost-result' }).count, 1);
+  assert.equal(counter.increment({ operationId: 'lost-result' }).count, 2);
+  assert.deepEqual(counter.read({}), {
+    runId: before.runId, count: 2,
+    executions: [{ sequence: 1, operationId: 'lost-result' }, { sequence: 2, operationId: 'lost-result' }]
+  });
+});
+test('reconciliation counter is isolated and reads cannot mutate its history', async () => {
+  const { createReconciliationCounter } = await reconciliation();
+  const first = createReconciliationCounter();
+  const second = createReconciliationCounter();
+  const result = first.increment({ operationId: 'one' });
+  result.executions[0].operationId = 'forged';
+  result.executions.push({ sequence: 2, operationId: 'forged' });
+  assert.equal(first.read({}).count, 1);
+  assert.equal(first.read({}).executions[0].operationId, 'one');
+  assert.equal(second.read({}).count, 0);
+  assert.notEqual(first.read({}).runId, second.read({}).runId);
+});
+test('reconciliation counter rejects malformed input before committing', async () => {
+  const { createReconciliationCounter } = await reconciliation();
+  const counter = createReconciliationCounter();
+  for (const input of [null, [], {}, { operationId: '' }, { operationId: ' ' },
+    { operationId: 42 }, { operationId: 'x'.repeat(81) }, { operationId: 'ok', extra: true }]) {
+    assert.throws(() => counter.increment(input), DomainError);
+  }
+  for (const input of [null, [], { extra: true }]) assert.throws(() => counter.read(input), DomainError);
+  assert.equal(counter.read({}).count, 0);
+});
+test('reconciliation counter commits before an intentionally discarded result', async () => {
+  const { createReconciliationCounter } = await reconciliation();
+  const counter = createReconciliationCounter();
+  void counter.increment({ operationId: 'suppressed-output' });
+  assert.equal(counter.read({}).count, 1);
+  assert.deepEqual(counter.read({}).executions, [{ sequence: 1, operationId: 'suppressed-output' }]);
+});
+test('reconciliation counter refuses overflow without changing its bounded history', async () => {
+  const { createReconciliationCounter } = await reconciliation();
+  const counter = createReconciliationCounter();
+  for (let i = 0; i < 100; i++) counter.increment({ operationId: 'bounded' });
+  assert.throws(() => counter.increment({ operationId: 'overflow' }), /limit/i);
+  assert.equal(counter.read({}).count, 100);
+  assert.equal(counter.read({}).executions.length, 100);
+});
+test('reconciliation native registration awaits both tools and preserves callbacks', async () => {
+  const { createReconciliationCounter, registerReconciliationTools } = await reconciliation();
+  const counter = createReconciliationCounter();
+  const registered = [];
+  let release;
+  const pending = new Promise(resolve => { release = resolve; });
+  const native = { registerTool: async (tool, options) => {
+    registered.push({ tool, options });
+    if (registered.length === 2) await pending;
+  } };
+  let ready = false;
+  const registration = registerReconciliationTools(native, counter).then(() => { ready = true; });
+  await Promise.resolve();
+  await Promise.resolve();
+  assert.equal(ready, false);
+  assert.deepEqual(registered.map(entry => entry.tool.name),
+    ['increment_reconciliation_counter', 'read_reconciliation_counter']);
+  assert.equal(registered[0].tool.annotations.readOnlyHint, false);
+  assert.equal(registered[1].tool.annotations.readOnlyHint, true);
+  release();
+  await registration;
+  assert.equal(ready, true);
+  registered[0].tool.execute({ operationId: 'native-callback' });
+  assert.equal(registered[1].tool.execute({}).count, 1);
+});
+test('reconciliation registration failure aborts partial registrations and surfaces the error', async () => {
+  const { createReconciliationCounter, registerReconciliationTools } = await reconciliation();
+  const signals = [];
+  const failure = new Error('native-registration-denied');
+  await assert.rejects(registerReconciliationTools({
+    registerTool: async (_tool, { signal }) => {
+      signals.push(signal);
+      if (signals.length === 2) throw failure;
+    }
+  }, createReconciliationCounter()), error => error === failure);
+  assert.equal(signals.length, 2);
+  assert.equal(signals.every(signal => signal.aborted), true);
+});
+test('reconciliation page is independently published without changing storefront tools', async () => {
+  assert(siteFiles.includes('reconciliation.html'));
+  assert(siteFiles.includes('reconciliation.mjs'));
+  const page = await readFile(join(site, 'reconciliation.html'), 'utf8');
+  assert.match(page, /id="reconciliation-count"/);
+  assert.match(page, /id="reconciliation-state"/);
+  assert.match(page, /src="\.\/reconciliation.mjs"/);
+  assert.equal(toolDefinitions.filter(tool => tool.availability === 'storefront' || tool.availability === 'both').length, 30);
 });
