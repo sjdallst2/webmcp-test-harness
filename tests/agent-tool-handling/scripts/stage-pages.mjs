@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 export const siteFiles = [
   'index.html', 'order-status.html', 'diagnostics.html', 'frame.html', 'styles.css',
   'app.mjs', 'store.mjs', 'tools.mjs', 'runtime.mjs', 'frame.mjs',
-  'diagnostics.mjs', 'diagnostics-ui.mjs', 'coverage.json', 'README.md',
+  'diagnostics.mjs', 'diagnostics-ui.mjs', 'reconciliation.html', 'reconciliation.mjs', 'coverage.json', 'README.md',
   'evals/README.md', 'evals/evals.json', 'evals/simulations.json'
 ];
 export const rootFiles = ['index.html', 'LICENSE'];

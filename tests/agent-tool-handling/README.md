@@ -98,6 +98,39 @@ shipping; `select_widget_shipping` does.
 
 ## Tools and coverage
 
+### Reconciliation counter
+
+The separate [reconciliation counter](./reconciliation.html) registers only
+`increment_reconciliation_counter` and `read_reconciliation_counter`. It does
+not add to or change the storefront's tools, cart, inventory or order behavior.
+No purchases, payments, network writes, persistence or reset tool are involved.
+
+Each document gets a fresh `runId` and a zero counter. Increment requires an
+`operationId` label (1 to 80 Unicode code points, not blank). Every valid call,
+including an identical retry, increments once. Labels are deliberately **not**
+idempotency keys. After 100 executions further increments throw `COUNTER_LIMIT`
+without changing the history. Invalid inputs also throw before committing.
+Read accepts only `{}` and returns `{runId, count, executions}`, where each
+execution has its committed `sequence` and `operationId`.
+
+The driver should record the initial run ID/count, discover through the real
+native lane, and authorize one synthetic increment. For the delivered control,
+compare the native result with the visible counter and read-tool result. For
+the lost-reply variant, suppress exactly one result **in the external driver**,
+only after allowing the actual native call to run. Read
+`#reconciliation-state` independently, without another increment. It updates
+before the callback returns, so a dropped result cannot erase the witness.
+Require an unchanged run ID and count one before any human-authorized retry;
+an identical retry must produce count two. Do not reload or navigate the
+fixture between these observations: either starts a new run and invalidates
+the comparison.
+
+This fixture does not suppress results, acknowledge fences, approve retries or
+certify model delivery. Those are assertions for the client/runtime E2E driver.
+Native registration is READY only after both registration promises fulfill;
+missing API reports UNSUPPORTED, and registration errors report ERROR and
+abort partial registrations.
+
 [tools.mjs](./tools.mjs) is the authoritative descriptor/schema/annotation/
 behavior/scenario source. [coverage.json](./coverage.json) is generated from it:
 
